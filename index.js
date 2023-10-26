@@ -29,7 +29,6 @@ async function run() {
     const servicesCollection = database.collection("services");
     const servicesOrderCollection = database.collection("servicesOrder");
 
-
     // access services collection data
     app.get("/services", async (req, res) => {
       const cursor = servicesCollection.find();
@@ -49,12 +48,28 @@ async function run() {
       res.send(result);
     });
 
-    // total service checked out
-    app.post('/services/orders', async (req, res) => {
-        const order = req.body;
-        const result = await servicesOrderCollection.insertOne(order);
-        res.send(result);
-    })
+    // total services checked out
+    app.get("/checkout", async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email };
+      }
+      const result = await servicesOrderCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/checkout", async (req, res) => {
+      const order = req.body;
+      const result = await servicesOrderCollection.insertOne(order);
+      res.send(result);
+    });
+
+    app.delete("/checkout/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await servicesOrderCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

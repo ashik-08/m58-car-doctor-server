@@ -64,83 +64,137 @@ async function run() {
 
     // auth related api
     app.post("/jwt", logger, async (req, res) => {
-      const user = req.body;
-      // console.log(user);
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1h",
-      });
-      // console.log(token);
-      res
-        .cookie("token", token, {
-          httpOnly: true,
-          secure: false, // http://localhost:5173/login,
-          sameSite: false,
-        })
-        .send({ success: true });
+      try {
+        const user = req.body;
+        // console.log(user);
+        const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+          expiresIn: "1h",
+        });
+        // console.log(token);
+        res
+          .cookie("token", token, {
+            httpOnly: true,
+            secure: false, // http://localhost:5173/login,
+            sameSite: false,
+          })
+          .send({ success: true });
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     // access services collection data
     app.get("/services", logger, async (req, res) => {
-      const cursor = servicesCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
+      try {
+        const cursor = servicesCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     // get service details or get to checkout based on unique service id
     app.get("/services/:id", logger, async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      // finds and returns the only wanted things
-      const options = {
-        projection: { title: 1, price: 1, img: 1 },
-      };
-      const result = await servicesCollection.findOne(query, options);
-      res.send(result);
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        // finds and returns the only wanted things
+        const options = {
+          projection: { title: 1, price: 1, img: 1 },
+        };
+        const result = await servicesCollection.findOne(query, options);
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    app.post("/services", async (req, res) => {
+      try {
+        const newService = req.body;
+        // query to find all data in the collection
+        const query = await servicesCollection.find().toArray();
+        // check if there is already a service with that Name
+        const found = query.find(
+          (search) =>
+            search.service_id === newService.service_id &&
+            search.title === newService.title &&
+            search.price === newService.price
+        );
+        console.log(found);
+        if (found) {
+          res.send({ message: "Already exists in DB" });
+        }
+        // insert a new service into the collection
+        else {
+          const result = await servicesCollection.insertOne(newService);
+          res.send(result);
+        }
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     // total services checked out
     app.get("/checkout", logger, verifyToken, async (req, res) => {
-      // console.log("Token: ", req.cookies.token);
-      // console.log("User in the valid token", req.user);
-      if (req.query?.email !== req.user?.email) {
-        return res
-          .status(401)
-          .send({ message: "Unauthorized Access Forbidden" });
+      try {
+        // console.log("Token: ", req.cookies.token);
+        // console.log("User in the valid token", req.user);
+        if (req.query?.email !== req.user?.email) {
+          return res
+            .status(401)
+            .send({ message: "Unauthorized Access Forbidden" });
+        }
+        let query = {};
+        if (req.query?.email) {
+          query = { email: req.query.email };
+        }
+        const result = await servicesOrderCollection.find(query).toArray();
+        res.send(result);
+      } catch (error) {
+        console.log(error);
       }
-      let query = {};
-      if (req.query?.email) {
-        query = { email: req.query.email };
-      }
-      const result = await servicesOrderCollection.find(query).toArray();
-      res.send(result);
     });
 
     app.post("/checkout", async (req, res) => {
-      const order = req.body;
-      const result = await servicesOrderCollection.insertOne(order);
-      res.send(result);
+      try {
+        const order = req.body;
+        const result = await servicesOrderCollection.insertOne(order);
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     app.patch("/checkout/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updateQuery = {
-        $set: {
-          status: req.body.approved,
-        },
-      };
-      const result = await servicesOrderCollection.updateOne(
-        filter,
-        updateQuery
-      );
-      res.send(result);
+      try {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updateQuery = {
+          $set: {
+            status: req.body.approved,
+          },
+        };
+        const result = await servicesOrderCollection.updateOne(
+          filter,
+          updateQuery
+        );
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     app.delete("/checkout/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await servicesOrderCollection.deleteOne(query);
-      res.send(result);
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await servicesOrderCollection.deleteOne(query);
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     // Send a ping to confirm a successful connection

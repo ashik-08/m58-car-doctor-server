@@ -110,27 +110,52 @@ async function run() {
       }
     });
 
+    // app.post("/services", async (req, res) => {
+    //   try {
+    //     const newService = req.body;
+    //     // query to find all data in the collection
+    //     const query = await servicesCollection.find().toArray();
+    //     // check if there is already a service with that Name
+    //     const found = query.find(
+    //       (search) =>
+    //         search.service_id === newService.service_id &&
+    //         search.title === newService.title &&
+    //         search.price === newService.price
+    //     );
+    //     console.log(found);
+    //     if (found) {
+    //       res.send({ message: "Already exists in DB" });
+    //     }
+    //     // insert a new service into the collection
+    //     else {
+    //       const result = await servicesCollection.insertOne(newService);
+    //       res.send(result);
+    //     }
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // });
+
+    // same thing just another method
     app.post("/services", async (req, res) => {
       try {
         const newService = req.body;
-        // query to find all data in the collection
-        const query = await servicesCollection.find().toArray();
-        // check if there is already a service with that Name
-        const found = query.find(
-          (search) =>
-            search.service_id === newService.service_id &&
-            search.title === newService.title &&
-            search.price === newService.price
-        );
-        console.log(found);
-        if (found) {
-          res.send({ message: "Already exists in DB" });
+        // find if there is already a same service in the collection
+        const isAdded = await servicesCollection.findOne({
+          service_id: newService.service_id,
+          title: newService.title,
+          price: newService.price,
+        });
+        if (isAdded) {
+          return res.send({
+            acknowledged: true,
+            insertedId: isAdded._id,
+            status: "Already exists in DB",
+          });
         }
         // insert a new service into the collection
-        else {
-          const result = await servicesCollection.insertOne(newService);
-          res.send(result);
-        }
+        const result = await servicesCollection.insertOne(newService);
+        res.send({...result, status: 'Added'});
       } catch (error) {
         console.log(error);
       }

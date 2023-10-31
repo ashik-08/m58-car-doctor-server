@@ -30,7 +30,7 @@ const client = new MongoClient(uri, {
 
 // middleware
 const logger = async (req, res, next) => {
-  // console.log("Called: ", req.hostname, req.originalUrl);
+  console.log("Called: ", req.method, req.hostname, req.originalUrl);
   next();
 };
 
@@ -83,10 +83,25 @@ async function run() {
       }
     });
 
+    app.post("/logout", async (req, res) => {
+      try {
+        const user = req.body;
+        console.log("logging out: ", user);
+        res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
     // access services collection data
     app.get("/services", logger, async (req, res) => {
       try {
-        const cursor = servicesCollection.find();
+        // exclude the things that we don't need
+        const projection = {
+          description: 0,
+          facility: 0,
+        };
+        const cursor = servicesCollection.find().project(projection);
         const result = await cursor.toArray();
         res.send(result);
       } catch (error) {
@@ -155,7 +170,7 @@ async function run() {
         }
         // insert a new service into the collection
         const result = await servicesCollection.insertOne(newService);
-        res.send({...result, status: 'Added'});
+        res.send({ ...result, status: "Added" });
       } catch (error) {
         console.log(error);
       }

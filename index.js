@@ -80,6 +80,7 @@ async function run() {
           .send({ success: true });
       } catch (error) {
         console.log(error);
+        return res.send({ error: true, message: error.message });
       }
     });
 
@@ -90,6 +91,7 @@ async function run() {
         res.clearCookie("token", { maxAge: 0 }).send({ success: true });
       } catch (error) {
         console.log(error);
+        return res.send({ error: true, message: error.message });
       }
     });
 
@@ -106,6 +108,7 @@ async function run() {
         res.send(result);
       } catch (error) {
         console.log(error);
+        return res.send({ error: true, message: error.message });
       }
     });
 
@@ -122,6 +125,7 @@ async function run() {
         res.send(result);
       } catch (error) {
         console.log(error);
+        return res.send({ error: true, message: error.message });
       }
     });
 
@@ -173,6 +177,7 @@ async function run() {
         res.send({ ...result, status: "Added" });
       } catch (error) {
         console.log(error);
+        return res.send({ error: true, message: error.message });
       }
     });
 
@@ -194,6 +199,7 @@ async function run() {
         res.send(result);
       } catch (error) {
         console.log(error);
+        return res.send({ error: true, message: error.message });
       }
     });
 
@@ -204,6 +210,7 @@ async function run() {
         res.send(result);
       } catch (error) {
         console.log(error);
+        return res.send({ error: true, message: error.message });
       }
     });
 
@@ -223,6 +230,7 @@ async function run() {
         res.send(result);
       } catch (error) {
         console.log(error);
+        return res.send({ error: true, message: error.message });
       }
     });
 
@@ -234,6 +242,7 @@ async function run() {
         res.send(result);
       } catch (error) {
         console.log(error);
+        return res.send({ error: true, message: error.message });
       }
     });
 

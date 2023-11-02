@@ -10,7 +10,8 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"], // change when in production
+    // origin: ["http://localhost:5173"], // change when in production
+    origin: ["https://m58-car-doctor-client.surge.sh"], // In production
     credentials: true,
   })
 );
@@ -56,7 +57,7 @@ const verifyToken = async (req, res, next) => {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const database = client.db("car-doctor");
     const servicesCollection = database.collection("services");
@@ -74,8 +75,8 @@ async function run() {
         res
           .cookie("token", token, {
             httpOnly: true,
-            secure: false, // http://localhost:5173/login,
-            sameSite: false,
+            secure: true, // http://localhost:5173/login,
+            // sameSite: 'none',
           })
           .send({ success: true });
       } catch (error) {

@@ -74,9 +74,9 @@ async function run() {
         // console.log(token);
         res
           .cookie("token", token, {
-            httpOnly: true,
+            httpOnly: false,
             secure: true, // http://localhost:5173/login,
-            // sameSite: 'none',
+            sameSite: "none",
           })
           .send({ success: true });
       } catch (error) {
@@ -89,7 +89,9 @@ async function run() {
       try {
         const user = req.body;
         console.log("logging out: ", user);
-        res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+        res
+          .clearCookie("token", { maxAge: 0, secure: true, sameSite: "none" })
+          .send({ success: true });
       } catch (error) {
         console.log(error);
         return res.send({ error: true, message: error.message });

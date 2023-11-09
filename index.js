@@ -63,6 +63,48 @@ async function run() {
     const servicesCollection = database.collection("services");
     const servicesOrderCollection = database.collection("servicesOrder");
 
+    // filtering API format
+    //http://localhost:5000/api/v1/services  => situation 1
+    //http://localhost:5000/api/v1/services?category=home-service  => situation 2
+
+    // sorting API format
+    //http://localhost:5000/api/v1/services  => situation 3
+    //http://localhost:5000/api/v1/services?sortField=price&sortOrder=asc  => situation 4
+
+    // pagination format
+    //http://localhost:5000/api/v1/services?page=1&limit=10  => situation 5
+    app.get("/api/v1/services", async (req, res) => {
+      let filter = {};
+      let sort = {};
+      const category = req.query.category;
+      const sortField = req.query.sortField;
+      const sortOrder = req.query.sortOrder;
+
+      // pagination
+      const page = Number(req.query.page);
+      const limit = Number(req.query.limit);
+      const skip = (page - 1) * limit;
+
+      if (category) {
+        filter = { category: category };
+      }
+      if (sortField && sortOrder) {
+        sort[sortField] = sortOrder;
+      }
+
+      const result = await servicesCollection
+        .find(filter)
+        .skip(skip)
+        .limit(limit)
+        .sort(sort)
+        .toArray();
+
+      // count total data
+      const totalDataCount = await servicesCollection.countDocuments();
+
+      res.send({ totalDataCount, result });
+    });
+
     // auth related api
     app.post("/jwt", logger, async (req, res) => {
       try {
